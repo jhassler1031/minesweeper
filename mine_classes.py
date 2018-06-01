@@ -15,6 +15,7 @@ class Node:
         self.is_mine = 0 #0 means not a mine, 1 means a mine
         self.adj_mines = 0
         self.is_showing = False
+        self.marked_as_mine = False
 
     def make_mine(self):
         self.is_mine = 1
@@ -22,8 +23,16 @@ class Node:
     def make_showing(self):
         self.is_showing = True
 
+    def mark_as_mine(self):
+        self.marked_as_mine = True
+
+    def unmark(self):
+        self.marked_as_mine = False
+
     def __repr__(self):
-        if self.is_showing:
+        if self.marked_as_mine:
+            return "!"
+        elif self.is_showing:
             if self.is_mine == 1:
                 return "M"
             else:
@@ -66,6 +75,23 @@ class Board:
 
     def player_turn(self):
         while True:
+            print("Would you like to: ")
+            print("1) Check a position")
+            print("2) Mark as mine")
+            print("3) Unmark as mine")
+            player_input = input(": ")
+
+            if player_input == "1":
+                return self.check_position()
+            elif player_input == "2":
+                self.mark_mine()
+                return True
+            elif player_input == "3":
+                self.unmark_mine()
+                return True
+
+    def check_position(self):
+        while True:
             player_input = input("Please enter the row and column number you would like to select, separated by a space: ")
             player_input = player_input.split()
             row = int(player_input[0])
@@ -79,6 +105,59 @@ class Board:
                 print("Invalid row number")
 
         self.board[row][col].make_showing()
+
+        if self.board[row][col].is_mine == 1:
+            print("BOOM!!! Game Over.")
+            return False
+        elif self.check_win():
+            return False
+        else:
+            return True
+
+    def mark_mine(self):
+        while True:
+            player_input = input("Please enter the row and column number you would like to select, separated by a space: ")
+            player_input = player_input.split()
+            row = int(player_input[0])
+            col = int(player_input[1])
+            if row >= 0 and row < self.size:
+                if col >= 0 and col < self.size:
+                    break
+                else:
+                    print("Invalid column number")
+            else:
+                print("Invalid row number")
+
+        self.board[row][col].mark_as_mine()
+
+    def unmark_mine(self):
+        while True:
+            player_input = input("Please enter the row and column number you would like to select, separated by a space: ")
+            player_input = player_input.split()
+            row = int(player_input[0])
+            col = int(player_input[1])
+            if row >= 0 and row < self.size:
+                if col >= 0 and col < self.size:
+                    break
+                else:
+                    print("Invalid column number")
+            else:
+                print("Invalid row number")
+
+        self.board[row][col].unmark()
+
+    def check_win(self):
+        count = 0
+        for row in self.board:
+            for col in row:
+                if col.is_showing and col.is_mine != 1:
+                    count += 1
+        if count == self.size * self.size:
+            print("You win!")
+            return True
+        else:
+            return False
+
 
     def __str__(self):
         r_count = 0
@@ -106,8 +185,3 @@ class Board:
         return ""
 
 #Testing ======================
-
-board = Board(5)
-print(board)
-board.player_turn()
-print(board)
